@@ -97,7 +97,7 @@ let data = [];
 
 /* ===== LOAD LOCATION MASTER ===== */
 async function loadLocations(){
- const res = await fetch(URL_LOCATION_MASTER);
+ const res = await fetch(https://defaulteda31a319b9748a88bd8d0897333bb.db.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/eb3f76bcbf41490cb0eb67e3f4478457/triggers/manual/paths/invoke?api-version=1);
  const json = await res.json();
  locations = json.locations;
 
@@ -158,7 +158,7 @@ function next(){
 
 /* ===== SUBMIT ===== */
 async function submit(){
- await liff.init({ liffId: LIFF_ID });
+ await liff.init({ liffId: 2008883092-lVX4JEfG });
 
  await fetch(URL_SUBMIT_DATA,{
   method:"POST",
