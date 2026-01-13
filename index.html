@@ -1,260 +1,96 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <title>Daily Stock</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- LIFF v2 SDK -->
-  https://static.line-scdn.net/liff/edge/2/sdk.js</script>
+<meta charset="UTF-8">
+<title>Daily Stock</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Helvetica Neue", sans-serif;
-      background: #0f1f4b;
-      color: #fff;
-      text-align: center;
-      margin: 0;
-      padding: 24px 12px;
-    }
-    h2, h3 { margin: 10px 0; }
-
-    input, select {
-      width: 240px;
-      height: 52px;
-      font-size: 22px;
-      text-align: center;
-      border-radius: 14px;
-      border: none;
-      background: #fff;
-      color: #000;
-      margin-bottom: 12px;
-    }
-    .keypad button {
-      width: 70px;
-      height: 48px;
-      margin: 6px;
-      border: none;
-      border-radius: 12px;
-      font-size: 18px;
-      background: #1c3d8b;
-      color: #fff;
-    }
-    .primary {
-      width: 240px;
-      height: 52px;
-      border-radius: 14px;
-      border: none;
-      background: #007aff;
-      color: #fff;
-      font-size: 20px;
-      margin-top: 14px;
-    }
-    .primary:active { opacity: .85; }
-  </style>
+<style>
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans-serif;
+  background:#0f1f4b;color:#fff;text-align:center;padding:24px
+}
+input,select{
+  width:240px;height:52px;font-size:22px;text-align:center;
+  border-radius:14px;border:none;margin-bottom:12px
+}
+.keypad button{
+  width:70px;height:48px;margin:6px;border:none;border-radius:12px;
+  font-size:18px;background:#1c3d8b;color:#fff
+}
+.primary{
+  width:240px;height:52px;border-radius:14px;border:none;
+  background:#007aff;color:#fff;font-size:20px
+}
+</style>
 </head>
 
 <body>
-  <h2 id="title">บันทึกการผลิต</h2>
+<h2>บันทึกการผลิต</h2>
 
-  <!-- ===== SETUP ===== -->
-  <div id="setup">
-    <h3>เลือกสถานที่</h3>
-    <select id="location">
-      <option value="">-- เลือกสถานที่ --</option>
-    </select>
+<h3>สถานที่</h3>
+<select id="location">
+  <option value="">-- เลือกสถานที่ --</option>
+  <option value="LOC001">LOC001</option>
+</select>
 
-    <h3>ค่าเช่า</h3>
-    <input id="rent" value="0" readonly />
+<h3>ค่าเช่า</h3>
+<input id="rent" value="0" readonly>
 
-    <div class="keypad" aria-label="rent keypad">
-      <button onclick="addRent(1)">1</button>
-      <button onclick="addRent(2)">2</button>
-      <button onclick="addRent(3)">3</button><br/>
-      <button onclick="addRent(4)">4</button>
-      <button onclick="addRent(5)">5</button>
-      <button onclick="addRent(6)">6</button><br/>
-      <button onclick="addRent(7)">7</button>
-      <button onclick="addRent(8)">8</button>
-      <button onclick="addRent(9)">9</button><br/>
-      <button onclick="addRent(0)">0</button>
-      <button onclick="delRent()">⌫</button>
-    </div>
+<div class="keypad">
+  <button onclick="addRent(1)">1</button>
+  <button onclick="addRent(2)">2</button>
+  <button onclick="addRent(3)">3</button><br>
+  <button onclick="addRent(4)">4</button>
+  <button onclick="addRent(5)">5</button>
+  <button onclick="addRent(6)">6</button><br>
+  <button onclick="addRent(7)">7</button>
+  <button onclick="addRent(8)">8</button>
+  <button onclick="addRent(9)">9</button><br>
+  <button onclick="addRent(0)">0</button>
+  <button onclick="delRent()">⌫</button>
+</div>
 
-    <button class="primary" onclick="start()">เริ่มบันทึก</button>
-  </div>
+<button class="primary" onclick="submit()">บันทึก</button>
 
-  <!-- ===== PRODUCE ===== -->
-  <div id="produce" style="display:none">
-    <h3 id="product"></h3>
-    <input id="value" value="0" readonly />
+<script>
+const LIFF_ID = "2008883092-lVX4JEfG";
+const URL_SUBMIT =
+"https://defaulteda31a319b9748a88bd8d0897333bb.db.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/eb3f76bcbf41490cb0eb67e3f4478457/triggers/manual/paths/invoke?api-version=1";
 
-    <div class="keypad" aria-label="produce keypad">
-      <button onclick="add(1)">1</button>
-      <button onclick="add(2)">2</button>
-      <button onclick="add(3)">3</button><br/>
-      <button onclick="add(4)">4</button>
-      <button onclick="add(5)">5</button>
-      <button onclick="add(6)">6</button><br/>
-      <button onclick="add(7)">7</button>
-      <button onclick="add(8)">8</button>
-      <button onclick="add(9)">9</button><br/>
-      <button onclick="add(0)">0</button>
-      <button onclick="del()">⌫</button>
-    </div>
+liff.init({ liffId: LIFF_ID });
 
-    <button class="primary" onclick="next()">ถัดไป</button>
-  </div>
+function addRent(n){
+  rent.value = rent.value==="0" ? n : rent.value+n;
+}
+function delRent(){
+  rent.value = rent.value.length>1 ? rent.value.slice(0,-1) : "0";
+}
 
-  <script>
-    /* ===== CONFIG ===== */
-    const LIFF_ID = "2008883092-lVX4JEfG";
-    // ปรับเป็น URL จริงของ Power Automate ของคุณ
-    const URL_LOCATION_MASTER = "https://defaulteda31a319b9748a88bd8d0897333bb.db.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/eb3f76bcbf41490cb0eb67e3f4478457/triggers/manual/paths/invoke?api-version=1";
-    const URL_SUBMIT_DATA    = "https://defaulteda31a319b9748a88bd8d0897333bb.db.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/eb3f76bcbf41490cb0eb67e3f4478457/triggers/manual/paths/invoke?api-version=1";
+async function submit(){
+  const payload = {
+    date: new Date().toISOString().slice(0,10),
+    location: location.value,
+    rent: Number(rent.value),
+    items: [
+      { product_id:"P01", produce:10, waste:2, remain:8 }
+    ]
+  };
 
-    /* ===== DATA ===== */
-    const products = [
-      { id: "P01", name: "ขนม A" }, { id: "P02", name: "ขนม B" },
-      { id: "P03", name: "ขนม C" }, { id: "P04", name: "ขนม D" },
-      { id: "P05", name: "ขนม E" }, { id: "P06", name: "ขนม F" },
-      { id: "P07", name: "ขนม G" }, { id: "P08", name: "ขนม H" },
-      { id: "P09", name: "ขนม I" }, { id: "P10", name: "ขนม J" }
-    ];
+  const res = await fetch(URL_SUBMIT,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(payload)
+  });
 
-    let locations = [];
-    let locationId = "";
-    let rentValue = 0;
-    let i = 0;
-    let data = [];
-
-    /* ===== LIFF INIT ===== */
-    (async function initLiff() {
-      try {
-        await liff.init({ liffId: LIFF_ID });
-        await liff.ready;
-
-        // ให้คนทั่วไปเข้าได้: ถ้าไม่ล็อกอิน ให้ล็อกอิน
-        if (!liff.isLoggedIn()) {
-          liff.login(); // หลัง login จะกลับมา URL เดิม
-          return;
-        }
-        // หลังพร้อมแล้วค่อยโหลดข้อมูลสถานที่
-        await loadLocations();
-      } catch (err) {
-        console.error("LIFF init error:", err);
-        alert("เกิดข้อผิดพลาดในการเริ่ม LIFF: " + (err?.message || err));
-      }
-    })();
-
-    /* ===== LOAD LOCATION MASTER ===== */
-    async function loadLocations() {
-      try {
-        const res = await fetch(https://defaulteda31a319b9748a88bd8d0897333bb.db.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/eb3f76bcbf41490cb0eb67e3f4478457/triggers/manual/paths/invoke?api-version=1, {
-          method: "GET", // หรือ "POST" ถ้า Flow ของคุณกำหนด
-          headers: { "Content-Type": "application/json" },
-          mode: "cors",
-        });
-
-        if (!res.ok) throw new Error("โหลดสถานที่ไม่สำเร็จ (" + res.status + ")");
-        const json = await res.json();
-
-        // ปรับตามรูปแบบข้อมูลจริงที่ Power Automate ส่งออก
-        locations = Array.isArray(json?.locations) ? json.locations : [];
-
-        const sel = document.getElementById("location");
-        locations.forEach(l => {
-          const op = document.createElement("option");
-          op.value = String(l.id ?? l.location_id ?? "");
-          op.textContent = String(l.name ?? l.location_name ?? "");
-          sel.appendChild(op);
-        });
-      } catch (err) {
-        console.error("loadLocations error:", err);
-        alert("โหลดข้อมูลสถานที่ไม่สำเร็จ");
-      }
-    }
-
-    /* ===== SETUP ===== */
-    function addRent(n) {
-      const v = rent.value;
-      rent.value = v === "0" ? String(n) : v + String(n);
-    }
-    function delRent() {
-      rent.value = rent.value.length > 1 ? rent.value.slice(0, -1) : "0";
-    }
-
-    function start() {
-      locationId = location.value;
-      rentValue = Number(rent.value);
-
-      if (!locationId) return alert("กรุณาเลือกสถานที่");
-      if (!locations.find(l => String(l.id ?? l.location_id ?? "") === locationId))
-        return alert("Location ไม่ถูกต้อง");
-      if (!Number.isFinite(rentValue) || rentValue <= 0)
-        return alert("กรุณากรอกค่าเช่าเป็นตัวเลขมากกว่า 0");
-
-      setup.style.display = "none";
-      produce.style.display = "block";
-      show();
-    }
-
-    /* ===== PRODUCE ===== */
-    function show() {
-      product.innerText = products[i].name;
-      value.value = "0";
-    }
-    function add(n) {
-      const v = value.value;
-      value.value = v === "0" ? String(n) : v + String(n);
-    }
-    function del() {
-      value.value = value.value.length > 1 ? value.value.slice(0, -1) : "0";
-    }
-    function next() {
-      data.push({
-        product_id: products[i].id,
-        value: Number(value.value)
-      });
-
-      i++;
-      i < products.length ? show() : submit();
-    }
-
-    /* ===== SUBMIT ===== */
-    async function submit() {
-      try {
-        // ทำให้แน่ใจว่า LIFF พร้อมและล็อกอิน
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
-
-        const payload = {
-          date: new Date().toISOString().slice(0, 10),
-          location_id: locationId,
-          rent: rentValue,
-          items: data
-        };
-
-        const res = await fetch(URL_SUBMIT_DATA, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-            // ใส่ Authorization ถ้า Flow ต้องใช้ เช่น: "Authorization": "Bearer <token>"
-          },
-          body: JSON.stringify(payload),
-          mode: "cors",
-        });
-
-        if (!res.ok) throw new Error("ส่งข้อมูลไม่สำเร็จ (" + res.status + ")");
-        document.body.innerHTML = "<h2>บันทึกข้อมูลเรียบร้อย ✅</h2>";
-        setTimeout(() => liff.closeWindow(), 1500);
-      } catch (err) {
-        console.error("submit error:", err);
-        alert("ส่งข้อมูลไม่สำเร็จ: " + (err?.message || err));
-      }
-    }
-  </script>
+  if(res.ok){
+    alert("บันทึกเรียบร้อย");
+    liff.closeWindow();
+  }else{
+    alert("บันทึกไม่สำเร็จ");
+  }
+}
+</script>
 </body>
 </html>
