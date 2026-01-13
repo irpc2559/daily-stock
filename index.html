@@ -4,37 +4,78 @@
 <meta charset="UTF-8">
 <title>Daily Stock</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
 <style>
 body { font-family:sans-serif; background:#1f2f6b; color:#fff; text-align:center; }
 button { width:70px; height:70px; font-size:24px; margin:5px; border-radius:50%; }
-input { font-size:26px; text-align:center; width:200px; height:50px; }
+input, select { font-size:24px; text-align:center; width:220px; height:50px; }
+.big { width:200px; border-radius:12px; }
 </style>
 </head>
 
 <body>
-<h2 id="title"></h2>
-<h3 id="product"></h3>
 
-<input id="value" value="0" readonly />
+<h2 id="title">บันทึกการผลิต</h2>
 
-<div>
-  <button onclick="add(1)">1</button>
-  <button onclick="add(2)">2</button>
-  <button onclick="add(3)">3</button><br>
-  <button onclick="add(4)">4</button>
-  <button onclick="add(5)">5</button>
-  <button onclick="add(6)">6</button><br>
-  <button onclick="add(7)">7</button>
-  <button onclick="add(8)">8</button>
-  <button onclick="add(9)">9</button><br>
-  <button onclick="add(0)">0</button>
-  <button onclick="del()">⌫</button>
+<!-- ===== SETUP ===== -->
+<div id="setup">
+  <h3>เลือกสถานที่</h3>
+  <select id="location">
+    <option value="">-- เลือกสถานที่ --</option>
+  </select>
+
+  <h3>ค่าเช่า</h3>
+  <input id="rent" value="0" readonly>
+
+  <div>
+    <button onclick="addRent(1)">1</button>
+    <button onclick="addRent(2)">2</button>
+    <button onclick="addRent(3)">3</button><br>
+    <button onclick="addRent(4)">4</button>
+    <button onclick="addRent(5)">5</button>
+    <button onclick="addRent(6)">6</button><br>
+    <button onclick="addRent(7)">7</button>
+    <button onclick="addRent(8)">8</button>
+    <button onclick="addRent(9)">9</button><br>
+    <button onclick="addRent(0)">0</button>
+    <button onclick="delRent()">⌫</button>
+  </div>
+
+  <br>
+  <button class="big" onclick="start()">เริ่มบันทึก</button>
 </div>
 
-<br>
-<button style="width:200px;border-radius:12px" onclick="next()">ถัดไป</button>
+<!-- ===== PRODUCE ===== -->
+<div id="produce" style="display:none">
+
+  <h3 id="product"></h3>
+  <input id="value" value="0" readonly>
+
+  <div>
+    <button onclick="add(1)">1</button>
+    <button onclick="add(2)">2</button>
+    <button onclick="add(3)">3</button><br>
+    <button onclick="add(4)">4</button>
+    <button onclick="add(5)">5</button>
+    <button onclick="add(6)">6</button><br>
+    <button onclick="add(7)">7</button>
+    <button onclick="add(8)">8</button>
+    <button onclick="add(9)">9</button><br>
+    <button onclick="add(0)">0</button>
+    <button onclick="del()">⌫</button>
+  </div>
+
+  <br>
+  <button class="big" onclick="next()">ถัดไป</button>
+</div>
 
 <script>
+/* ===== CONFIG ===== */
+const LIFF_ID = "YOUR_LIFF_ID";
+const URL_LOCATION_MASTER = "YOUR_POWER_AUTOMATE_LOCATION_URL";
+const URL_SUBMIT_DATA = "YOUR_POWER_AUTOMATE_SUBMIT_URL";
+
+/* ===== DATA ===== */
 const products = [
  {id:"P01",name:"ขนม A"},
  {id:"P02",name:"ขนม B"},
@@ -48,59 +89,92 @@ const products = [
  {id:"P10",name:"ขนม J"}
 ];
 
+let locations = [];
+let locationId = "";
+let rentValue = 0;
 let i = 0;
-let mode = "PRODUCE"; // เปลี่ยนเป็น CLOSE ตอนปิดวัน
 let data = [];
 
-document.getElementById("title").innerText =
- mode==="PRODUCE" ? "บันทึกการผลิต" : "สรุปปลายวัน";
+/* ===== LOAD LOCATION MASTER ===== */
+async function loadLocations(){
+ const res = await fetch(URL_LOCATION_MASTER);
+ const json = await res.json();
+ locations = json.locations;
 
-show();
+ const sel = document.getElementById("location");
+ locations.forEach(l=>{
+   const op = document.createElement("option");
+   op.value = l.id;
+   op.text = l.name;
+   sel.appendChild(op);
+ });
+}
+loadLocations();
 
+/* ===== SETUP ===== */
+function addRent(n){
+ let v = rent.value;
+ rent.value = v==="0" ? n : v+n;
+}
+function delRent(){
+ rent.value = rent.value.length>1 ? rent.value.slice(0,-1) : "0";
+}
+
+function start(){
+ locationId = location.value;
+ rentValue = Number(rent.value);
+
+ if(!locationId) return alert("กรุณาเลือกสถานที่");
+ if(!locations.find(l=>l.id===locationId)) return alert("Location ไม่ถูกต้อง");
+ if(rentValue<=0) return alert("กรุณากรอกค่าเช่า");
+
+ setup.style.display="none";
+ produce.style.display="block";
+ show();
+}
+
+/* ===== PRODUCE ===== */
 function show(){
- document.getElementById("product").innerText = products[i].name;
- document.getElementById("value").value = 0;
+ product.innerText = products[i].name;
+ value.value = 0;
 }
 
 function add(n){
- let v = document.getElementById("value");
- v.value = v.value==="0" ? n : v.value+n;
+ value.value = value.value==="0" ? n : value.value+n;
 }
 function del(){
- let v = document.getElementById("value");
- v.value = v.value.length>1 ? v.value.slice(0,-1) : "0";
+ value.value = value.value.length>1 ? value.value.slice(0,-1) : "0";
 }
 
 function next(){
  data.push({
-  product_id: products[i].id,
-  value: Number(value.value)
+   product_id: products[i].id,
+   value: Number(value.value)
  });
 
  i++;
- if(i<products.length){
-   show();
- }else{
-   submit();
- }
+ i<products.length ? show() : submit();
 }
 
+/* ===== SUBMIT ===== */
 async function submit(){
- await liff.init({ liffId:"2008883092-lVX4JEfG" });
+ await liff.init({ liffId: LIFF_ID });
 
- fetch("https://defaulteda31a319b9748a88bd8d0897333bb.db.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/eb3f76bcbf41490cb0eb67e3f4478457/triggers/manual/paths/invoke?api-version=1",{
+ await fetch(URL_SUBMIT_DATA,{
   method:"POST",
   headers:{ "Content-Type":"application/json" },
   body: JSON.stringify({
     date: new Date().toISOString().slice(0,10),
-    location_id: "LOC001",
-    mode: mode,
+    location_id: locationId,
+    rent: rentValue,
     items: data
   })
  });
 
- liff.closeWindow();
+ document.body.innerHTML = "<h2>บันทึกข้อมูลเรียบร้อย ✅</h2>";
+ setTimeout(()=>liff.closeWindow(),1500);
 }
 </script>
+
 </body>
 </html>
