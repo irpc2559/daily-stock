@@ -1,210 +1,184 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<title>บันทึกการผลิต</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta charset="UTF-8" />
+  <title>บันทึกการผลิต</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  https://static.line-scdn.net/liff/edge/2/sdk.js</script>
 
-<style>
-:root{
-  --bg:#1f2f63;
-  --card:#ffffff;
-  --primary:#007aff;
-  --text:#111;
-}
-
-*{ box-sizing:border-box; }
-
-body{
-  margin:0;
-  min-height:100vh;
-  background:var(--bg);
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-
-.app{
-  width:100%;
-  max-width:390px;
-  padding:24px;
-  color:white;
-}
-
-h1{
-  text-align:center;
-  font-size:20px;
-  margin-bottom:24px;
-  font-weight:600;
-}
-
-.card{
-  background:var(--card);
-  border-radius:24px;
-  padding:20px;
-  color:var(--text);
-  box-shadow:0 10px 30px rgba(0,0,0,.15);
-}
-
-.label{
-  font-size:14px;
-  color:#666;
-  margin-bottom:6px;
-}
-
-select{
-  width:100%;
-  height:52px;
-  border-radius:14px;
-  border:1px solid #ddd;
-  font-size:18px;
-  padding:0 14px;
-  appearance:none;
-}
-
-.rent-display{
-  text-align:center;
-  font-size:36px;
-  font-weight:600;
-  margin:16px 0;
-}
-
-.keypad{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:12px;
-}
-
-.keypad button{
-  height:64px;
-  border-radius:50%;
-  border:none;
-  background:#f2f2f7;
-  font-size:22px;
-  font-weight:500;
-}
-
-.keypad button:active{
-  background:#d1d1d6;
-}
-
-.keypad .zero{
-  grid-column:span 2;
-  border-radius:32px;
-}
-
-.submit{
-  margin-top:20px;
-  width:100%;
-  height:54px;
-  border-radius:16px;
-  border:none;
-  background:var(--primary);
-  color:white;
-  font-size:18px;
-  font-weight:600;
-}
-</style>
+  <style>
+    :root{
+      --bg:#1f2f63;
+      --card:#ffffff;
+      --primary:#007aff;
+      --text:#111;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      min-height:100vh;
+      background:var(--bg);
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+    .app{ width:100%; max-width:390px; padding:24px; color:white; }
+    h1{ text-align:center; font-size:20px; margin-bottom:24px; font-weight:600; }
+    .card{
+      background:var(--card);
+      border-radius:24px;
+      padding:20px;
+      color:var(--text);
+      box-shadow:0 10px 30px rgba(0,0,0,.15);
+    }
+    .label{ font-size:14px; color:#666; margin-bottom:6px; }
+    select{
+      width:100%; height:52px; border-radius:14px; border:1px solid #ddd;
+      font-size:18px; padding:0 14px; appearance:none;
+    }
+    .rent-display{ text-align:center; font-size:36px; font-weight:600; margin:16px 0; }
+    .keypad{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .keypad button{
+      height:64px; border-radius:50%; border:none; background:#f2f2f7;
+      font-size:22px; font-weight:500;
+    }
+    .keypad button:active{ background:#d1d1d6; }
+    .keypad .zero{ grid-column:span 2; border-radius:32px; }
+    .submit{
+      margin-top:20px; width:100%; height:54px; border-radius:16px; border:none;
+      background:var(--primary); color:white; font-size:18px; font-weight:600;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="app">
+    <h1>บันทึกการผลิต</h1>
 
-<div class="app">
-  <h1>บันทึกการผลิต</h1>
+    <div class="card">
+      <div class="label">เลือกสถานที่</div>
+      <select id="location">
+        <option value="">-- เลือกสถานที่ --</option>
+        <option value="LOC001">สาขา 1</option>
+        <option value="LOC002">สาขา 2</option>
+      </select>
 
-  <div class="card">
+      <div class="label" style="margin-top:16px">ค่าเช่า</div>
+      <div class="rent-display" id="rentDisplay">0</div>
 
-    <div class="label">เลือกสถานที่</div>
-    <select id="location">
-      <option value="">-- เลือกสถานที่ --</option>
-      <option value="LOC001">สาขา 1</option>
-      <option value="LOC002">สาขา 2</option>
-    </select>
+      <div class="keypad">
+        <button onclick="press(1)">1</button>
+        <button onclick="press(2)">2</button>
+        <button onclick="press(3)">3</button>
+        <button onclick="press(4)">4</button>
+        <button onclick="press(5)">5</button>
+        <button onclick="press(6)">6</button>
+        <button onclick="press(7)">7</button>
+        <button onclick="press(8)">8</button>
+        <button onclick="press(9)">9</button>
+        <button class="zero" onclick="press(0)">0</button>
+        <button onclick="back()">⌫</button>
+      </div>
 
-    <div class="label" style="margin-top:16px">ค่าเช่า</div>
-    <div class="rent-display" id="rentDisplay">0</div>
-
-    <div class="keypad">
-      <button onclick="press(1)">1</button>
-      <button onclick="press(2)">2</button>
-      <button onclick="press(3)">3</button>
-      <button onclick="press(4)">4</button>
-      <button onclick="press(5)">5</button>
-      <button onclick="press(6)">6</button>
-      <button onclick="press(7)">7</button>
-      <button onclick="press(8)">8</button>
-      <button onclick="press(9)">9</button>
-      <button class="zero" onclick="press(0)">0</button>
-      <button onclick="back()">⌫</button>
+      <button class="submit" id="submitBtn">เริ่มบันทึก</button>
     </div>
-
-    <button class="submit" onclick="submitData()">เริ่มบันทึก</button>
-
   </div>
-</div>
 
-<script>
-const LIFF_ID = "2008883092-lVX4JEfG";
-const FLOW_URL =
-"https://defaulteda31a319b9748a88bd8d0897333bb.db.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/eb3f76bcbf41490cb0eb67e3f4478457/triggers/manual/paths/invoke?api-version=1";
+  <script>
+    const LIFF_ID = "2008883092-lVX4JEfG";
+    const FLOW_URL =
+      "https://defaulteda31a319b9748a88bd8d0897333bb.db.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/eb3f76bcbf41490cb0eb67e3f4478457/triggers/manual/paths/invoke?api-version=1";
 
-let rentValue = "";
+    const locationEl = document.getElementById("location");
+    const rentDisplayEl = document.getElementById("rentDisplay");
+    const submitBtn = document.getElementById("submitBtn");
 
-liff.init({ liffId: "2008883092-lVX4JEfG" });
+    let rentValue = "";
 
-function updateDisplay(){
-  document.getElementById("rentDisplay").innerText = rentValue || "0";
-}
+    // --- Init LIFF properly ---
+    (async function init() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        await liff.ready;
 
-function press(n){
-  if(rentValue.length < 7){
-    rentValue += n;
-    updateDisplay();
-  }
-}
-
-function back(){
-  rentValue = rentValue.slice(0,-1);
-  updateDisplay();
-}
-
-async function submitData(){
-  if(!location.value){
-    alert("กรุณาเลือกสถานที่");
-    return;
-  }
-
-  const payload = {
-    date: new Date().toISOString().slice(0,10),
-    location: location.value,
-    rent: Number(rentValue || 0),
-    items: [
-      {
-        product_id: "P01",
-        produce: 10,
-        waste: 2,
-        remain: 8
+        if (!liff.isLoggedIn()) {
+          liff.login(); // หลัง login จะกลับมาที่หน้าเดิม
+          return;
+        }
+        // พร้อมใช้งาน
+        submitBtn.addEventListener("click", submitData);
+      } catch (err) {
+        console.error("LIFF init error:", err);
+        alert("เกิดข้อผิดพลาดในการเริ่ม LIFF: " + (err?.message || err));
       }
-    ]
-  };
+    })();
 
-  const res = await fetch(FLOW_URL,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify(payload)
-  });
+    function updateDisplay(){
+      rentDisplayEl.innerText = rentValue || "0";
+    }
 
-  if(res.ok){
-    alert("บันทึกสำเร็จ");
-    liff.closeWindow();
-  }else{
-    alert("บันทึกไม่สำเร็จ");
-  }
-}
-</script>
+    function press(n){
+      if (String(rentValue).length < 9) { // กันยาวเกินไป
+        rentValue = String(rentValue) + String(n);
+        updateDisplay();
+      }
+    }
 
+    function back(){
+      rentValue = String(rentValue).slice(0,-1);
+      updateDisplay();
+    }
+
+    async function submitData(){
+      try {
+        const locationValue = locationEl.value;
+        const rentNum = Number(rentValue || 0);
+
+        if (!locationValue) {
+          alert("กรุณาเลือกสถานที่");
+          return;
+        }
+        if (!Number.isFinite(rentNum) || rentNum <= 0) {
+          alert("กรุณากรอกค่าเช่าให้ถูกต้อง (> 0)");
+          return;
+        }
+
+        const payload = {
+          date: new Date().toISOString().slice(0,10),
+          location: locationValue,
+          rent: rentNum,
+          items: [
+            { product_id: "P01", produce: 10, waste: 2, remain: 8 }
+          ]
+        };
+
+        const res = await fetch(FLOW_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // ถ้า Flow ต้องใช้ token ให้ใส่:
+            // "Authorization": "Bearer <YOUR_TOKEN>"
+          },
+          body: JSON.stringify(payload),
+          mode: "cors",
+        });
+
+        if (res.ok) {
+          alert("บันทึกสำเร็จ");
+          setTimeout(() => liff.closeWindow(), 1200);
+        } else {
+          const text = await res.text().catch(() => "");
+          alert("บันทึกไม่สำเร็จ (" + res.status + "): " + text);
+          console.error("Submit failed", res.status, text);
+        }
+      } catch (err) {
+        console.error("submitData error:", err);
+        alert("เกิดข้อผิดพลาดระหว่างบันทึกข้อมูล: " + (err?.message || err));
+      }
+    }
+  </script>
 </body>
 </html>
