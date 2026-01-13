@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Daily Stock</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+body { font-family:sans-serif; background:#1f2f6b; color:#fff; text-align:center; }
+button { width:70px; height:70px; font-size:24px; margin:5px; border-radius:50%; }
+input { font-size:26px; text-align:center; width:200px; height:50px; }
+</style>
+</head>
+
+<body>
+<h2 id="title"></h2>
+<h3 id="product"></h3>
+
+<input id="value" value="0" readonly />
+
+<div>
+  <button onclick="add(1)">1</button>
+  <button onclick="add(2)">2</button>
+  <button onclick="add(3)">3</button><br>
+  <button onclick="add(4)">4</button>
+  <button onclick="add(5)">5</button>
+  <button onclick="add(6)">6</button><br>
+  <button onclick="add(7)">7</button>
+  <button onclick="add(8)">8</button>
+  <button onclick="add(9)">9</button><br>
+  <button onclick="add(0)">0</button>
+  <button onclick="del()">⌫</button>
+</div>
+
+<br>
+<button style="width:200px;border-radius:12px" onclick="next()">ถัดไป</button>
+
+<script>
+const products = [
+ {id:"P01",name:"ขนม A"},
+ {id:"P02",name:"ขนม B"},
+ {id:"P03",name:"ขนม C"},
+ {id:"P04",name:"ขนม D"},
+ {id:"P05",name:"ขนม E"},
+ {id:"P06",name:"ขนม F"},
+ {id:"P07",name:"ขนม G"},
+ {id:"P08",name:"ขนม H"},
+ {id:"P09",name:"ขนม I"},
+ {id:"P10",name:"ขนม J"}
+];
+
+let i = 0;
+let mode = "PRODUCE"; // เปลี่ยนเป็น CLOSE ตอนปิดวัน
+let data = [];
+
+document.getElementById("title").innerText =
+ mode==="PRODUCE" ? "บันทึกการผลิต" : "สรุปปลายวัน";
+
+show();
+
+function show(){
+ document.getElementById("product").innerText = products[i].name;
+ document.getElementById("value").value = 0;
+}
+
+function add(n){
+ let v = document.getElementById("value");
+ v.value = v.value==="0" ? n : v.value+n;
+}
+function del(){
+ let v = document.getElementById("value");
+ v.value = v.value.length>1 ? v.value.slice(0,-1) : "0";
+}
+
+function next(){
+ data.push({
+  product_id: products[i].id,
+  value: Number(value.value)
+ });
+
+ i++;
+ if(i<products.length){
+   show();
+ }else{
+   submit();
+ }
+}
+
+async function submit(){
+ await liff.init({ liffId:"YOUR_LIFF_ID" });
+
+ fetch("YOUR_POWER_AUTOMATE_WEBHOOK",{
+  method:"POST",
+  headers:{ "Content-Type":"application/json" },
+  body: JSON.stringify({
+    date: new Date().toISOString().slice(0,10),
+    location_id: "LOC001",
+    mode: mode,
+    items: data
+  })
+ });
+
+ liff.closeWindow();
+}
+</script>
+</body>
+</html>
