@@ -32,7 +32,6 @@ h1{font-size:22px;margin-bottom:24px}
 .option.active{
   background:#000;
   color:#fff;
-  border-color:#000;
 }
 
 .big-number{
@@ -65,7 +64,6 @@ h1{font-size:22px;margin-bottom:24px}
   color:#fff;
 }
 .btn[disabled]{opacity:.4}
-
 .center{text-align:center}
 </style>
 </head>
@@ -76,10 +74,8 @@ h1{font-size:22px;margin-bottom:24px}
 <!-- STEP 1 -->
 <div class="step active">
   <h1>เลือกสถานที่ขาย</h1>
-
   <div class="option" onclick="selectLocation('LOC001',this)">สาขา 1</div>
   <div class="option" onclick="selectLocation('LOC002',this)">สาขา 2</div>
-
   <button class="btn" id="btnStep1" disabled onclick="nextStep()">ถัดไป</button>
 </div>
 
@@ -102,13 +98,27 @@ h1{font-size:22px;margin-bottom:24px}
     <button onclick="back()">⌫</button>
   </div>
 
-  <button class="btn" onclick="nextStep()">ถัดไป</button>
+  <button class="btn" onclick="saveRent()">ถัดไป</button>
 </div>
 
 <!-- STEP 3 -->
 <div class="step">
   <h1 id="productTitle"></h1>
-  <input type="number" id="produceInput" placeholder="จำนวนที่ผลิต">
+  <div class="big-number" id="produceDisplay">0</div>
+
+  <div class="keypad">
+    <button onclick="pressProduce(1)">1</button>
+    <button onclick="pressProduce(2)">2</button>
+    <button onclick="pressProduce(3)">3</button>
+    <button onclick="pressProduce(4)">4</button>
+    <button onclick="pressProduce(5)">5</button>
+    <button onclick="pressProduce(6)">6</button>
+    <button onclick="pressProduce(7)">7</button>
+    <button onclick="pressProduce(8)">8</button>
+    <button onclick="pressProduce(9)">9</button>
+    <button style="grid-column:span 2" onclick="pressProduce(0)">0</button>
+    <button onclick="backProduce()">⌫</button>
+  </div>
 
   <button class="btn" id="productBtn" onclick="nextProduct()">ถัดไป</button>
 </div>
@@ -123,20 +133,22 @@ h1{font-size:22px;margin-bottom:24px}
 
 <script>
 const LIFF_ID = "2008883092-lVX4JEfG";
-const FLOW_URL = "https://defaulteda31a319b9748a88bd8d0897333bb.db.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/eb3f76bcbf41490cb0eb67e3f4478457/triggers/manual/paths/invoke?api-version=1";
+const FLOW_URL = "PUT_YOUR_FLOW_URL_HERE";
 
 const steps = document.querySelectorAll(".step");
 let stepIndex = 0;
 let rentValue = "";
+let produceValue = "";
 let productIndex = 0;
 
 const data = {
   location:"",
   rent:0,
-  items:[
-    {id:"P01",name:"สินค้า A",produce:0},
-    {id:"P02",name:"สินค้า B",produce:0}
-  ]
+  items: Array.from({length:10}, (_,i)=>({
+    id:`P${i+1}`,
+    name:`สินค้า ${i+1}`,
+    produce:0
+  }))
 };
 
 function showStep(i){
@@ -152,14 +164,11 @@ function selectLocation(val,el){
 }
 
 function nextStep(){
-  if(stepIndex===1){
-    data.rent = Number(rentValue);
-    loadProduct();
-  }
   stepIndex++;
   showStep(stepIndex);
 }
 
+/* RENT */
 function press(n){
   rentValue += n;
   rentDisplay.innerText = rentValue;
@@ -168,18 +177,31 @@ function back(){
   rentValue = rentValue.slice(0,-1);
   rentDisplay.innerText = rentValue || "0";
 }
+function saveRent(){
+  data.rent = Number(rentValue||0);
+  loadProduct();
+  nextStep();
+}
 
+/* PRODUCT */
 function loadProduct(){
   productTitle.innerText = data.items[productIndex].name;
   productBtn.innerText =
     productIndex === data.items.length-1 ? "เสร็จสิ้น" : "ถัดไป";
+  produceValue="";
+  produceDisplay.innerText="0";
 }
-
+function pressProduce(n){
+  produceValue += n;
+  produceDisplay.innerText = produceValue;
+}
+function backProduce(){
+  produceValue = produceValue.slice(0,-1);
+  produceDisplay.innerText = produceValue || "0";
+}
 function nextProduct(){
-  data.items[productIndex].produce = Number(produceInput.value||0);
-  produceInput.value="";
+  data.items[productIndex].produce = Number(produceValue||0);
   productIndex++;
-
   if(productIndex < data.items.length){
     loadProduct();
   }else{
@@ -190,7 +212,7 @@ function nextProduct(){
 async function submitData(){
   await fetch(FLOW_URL,{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
+    headers:{ "Content-Type":"application/json" },
     body:JSON.stringify(data)
   });
   stepIndex=3;
@@ -202,6 +224,5 @@ async function submitData(){
   if(!liff.isLoggedIn()) liff.login();
 })();
 </script>
-
 </body>
 </html>
