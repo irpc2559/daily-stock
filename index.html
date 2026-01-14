@@ -5,11 +5,12 @@
 <title>บันทึกการผลิต</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+<!-- ✅ LIFF SDK (ห้ามลบ) -->
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
 :root{
-  --bg:#ffffff;
+  --bg:#fff;
   --text:#111;
   --muted:#999;
   --border:#e5e5e5;
@@ -32,7 +33,6 @@ h1{
 }
 .step{display:none}
 .step.active{display:block}
-
 .label{
   font-size:14px;
   color:var(--muted);
@@ -64,7 +64,6 @@ select,input{
   font-size:22px;
 }
 .keypad .zero{grid-column:span 2;border-radius:32px}
-
 .btn{
   width:100%;
   height:52px;
@@ -77,10 +76,6 @@ select,input{
   background:#000;
   color:#fff;
 }
-.btn-secondary{
-  background:#fff;
-  border:1px solid var(--border);
-}
 .center{text-align:center}
 .success{
   font-size:22px;
@@ -92,138 +87,175 @@ select,input{
 <body>
 <div class="app">
 
-  <!-- STEP 1 -->
-  <div class="step active" id="step1">
-    <h1>เลือกสถานที่ขาย</h1>
-    <div class="label">สถานที่</div>
-    <select id="location">
-      <option value="">-- เลือก --</option>
-      <option value="LOC001">สาขา 1</option>
-      <option value="LOC002">สาขา 2</option>
-    </select>
-    <button class="btn btn-primary" onclick="nextStep()">ถัดไป</button>
+<!-- STEP 1 -->
+<div class="step active" id="step1">
+  <h1>เลือกสถานที่ขาย</h1>
+  <div class="label">สถานที่</div>
+  <select id="location">
+    <option value="" disabled selected>-- เลือก --</option>
+    <option value="LOC001">สาขา 1</option>
+    <option value="LOC002">สาขา 2</option>
+  </select>
+  <button class="btn btn-primary"
+    onclick="document.activeElement.blur(); nextStep();">
+    ถัดไป
+  </button>
+</div>
+
+<!-- STEP 2 -->
+<div class="step" id="step2">
+  <h1>ค่าเช่า</h1>
+  <div class="big-number" id="rentDisplay">0</div>
+
+  <div class="keypad">
+    <button onclick="press(1)">1</button>
+    <button onclick="press(2)">2</button>
+    <button onclick="press(3)">3</button>
+    <button onclick="press(4)">4</button>
+    <button onclick="press(5)">5</button>
+    <button onclick="press(6)">6</button>
+    <button onclick="press(7)">7</button>
+    <button onclick="press(8)">8</button>
+    <button onclick="press(9)">9</button>
+    <button class="zero" onclick="press(0)">0</button>
+    <button onclick="back()">⌫</button>
   </div>
 
-  <!-- STEP 2 -->
-  <div class="step" id="step2">
-    <h1>ค่าเช่า</h1>
-    <div class="big-number" id="rentDisplay">0</div>
-    <div class="keypad">
-      <button onclick="press(1)">1</button>
-      <button onclick="press(2)">2</button>
-      <button onclick="press(3)">3</button>
-      <button onclick="press(4)">4</button>
-      <button onclick="press(5)">5</button>
-      <button onclick="press(6)">6</button>
-      <button onclick="press(7)">7</button>
-      <button onclick="press(8)">8</button>
-      <button onclick="press(9)">9</button>
-      <button class="zero" onclick="press(0)">0</button>
-      <button onclick="back()">⌫</button>
-    </div>
-    <button class="btn btn-primary" onclick="nextStep()">ถัดไป</button>
-  </div>
+  <button class="btn btn-primary"
+    onclick="document.activeElement.blur(); nextStep();">
+    ถัดไป
+  </button>
+</div>
 
-  <!-- STEP 3 -->
-  <div class="step" id="step3">
-    <h1 id="productTitle"></h1>
-    <div class="label">จำนวนที่ผลิต</div>
-    <input type="number" id="produceInput" min="0" />
-    <button class="btn btn-primary" id="productBtn" onclick="nextProduct()">ถัดไป</button>
-  </div>
+<!-- STEP 3 -->
+<div class="step" id="step3">
+  <h1 id="productTitle"></h1>
+  <div class="label">จำนวนที่ผลิต</div>
+  <input type="number" id="produceInput" min="0" />
+  <button class="btn btn-primary" id="productBtn" onclick="nextProduct()">
+    ถัดไป
+  </button>
+</div>
 
-  <!-- STEP 4 -->
-  <div class="step center" id="step4">
-    <div class="success">✅ บันทึกข้อมูลสำเร็จ</div>
-    <button class="btn btn-primary" onclick="closeApp()">ออกจากหน้านี้</button>
-  </div>
+<!-- STEP 4 -->
+<div class="step center" id="step4">
+  <div class="success">✅ บันทึกข้อมูลสำเร็จ</div>
+  <button class="btn btn-primary" onclick="closeApp()">
+    ออกจากหน้านี้
+  </button>
+</div>
 
 </div>
 
 <script>
+/* ================== CONFIG ================== */
 const LIFF_ID = "2008883092-lVX4JEfG";
 const FLOW_URL = "https://defaulteda31a319b9748a88bd8d0897333bb.db.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/eb3f76bcbf41490cb0eb67e3f4478457/triggers/manual/paths/invoke?api-version=1";
 
+/* ================== STATE ================== */
 const steps = document.querySelectorAll(".step");
 let stepIndex = 0;
+let rentValue = "";
+let productIndex = 0;
 
 const data = {
   location:"",
   rent:0,
   items:[
-    {id:"P01", name:"สินค้า A", produce:0},
-    {id:"P02", name:"สินค้า B", produce:0}
+    { id:"P01", name:"สินค้า A", produce:0 },
+    { id:"P02", name:"สินค้า B", produce:0 }
   ]
 };
 
-let rentValue="";
-let productIndex=0;
-
+/* ================== STEP CONTROL ================== */
 function showStep(i){
   steps.forEach(s=>s.classList.remove("active"));
   steps[i].classList.add("active");
 }
 
 function nextStep(){
-  if(stepIndex===0){
-    data.location = location.value;
-    if(!data.location) return alert("เลือกสถานที่");
+  if(stepIndex === 0){
+    const loc = location.value?.trim();
+    if(!loc){
+      alert("กรุณาเลือกสถานที่ขาย");
+      return;
+    }
+    data.location = loc;
   }
-  if(stepIndex===1){
+
+  if(stepIndex === 1){
     data.rent = Number(rentValue);
-    if(data.rent<=0) return alert("กรอกค่าเช่า");
+    if(data.rent <= 0){
+      alert("กรุณากรอกค่าเช่า");
+      return;
+    }
     loadProduct();
   }
+
   stepIndex++;
   showStep(stepIndex);
 }
 
+/* ================== RENT ================== */
 function press(n){
-  rentValue+=n;
-  rentDisplay.innerText = rentValue;
+  if(rentValue.length < 9){
+    rentValue += n;
+    rentDisplay.innerText = rentValue;
+  }
 }
 function back(){
-  rentValue=rentValue.slice(0,-1);
+  rentValue = rentValue.slice(0,-1);
   rentDisplay.innerText = rentValue || "0";
 }
 
+/* ================== PRODUCT ================== */
 function loadProduct(){
   productTitle.innerText = data.items[productIndex].name;
+  productBtn.innerText =
+    productIndex === data.items.length - 1 ? "เสร็จสิ้น" : "ถัดไป";
 }
 
 function nextProduct(){
-  data.items[productIndex].produce = Number(produceInput.value||0);
-  produceInput.value="";
+  data.items[productIndex].produce = Number(produceInput.value || 0);
+  produceInput.value = "";
   productIndex++;
 
   if(productIndex < data.items.length){
     loadProduct();
-    if(productIndex === data.items.length-1){
-      productBtn.innerText="เสร็จสิ้น";
-    }
   }else{
     submitData();
   }
 }
 
+/* ================== SUBMIT ================== */
 async function submitData(){
-  await fetch(FLOW_URL,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify(data)
-  });
-  stepIndex=3;
-  showStep(stepIndex);
+  try{
+    await fetch(FLOW_URL,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify(data)
+    });
+    stepIndex = 3;
+    showStep(stepIndex);
+  }catch(e){
+    alert("ส่งข้อมูลไม่สำเร็จ");
+  }
 }
 
+/* ================== LIFF ================== */
 function closeApp(){
   liff.closeWindow();
 }
 
 (async()=>{
-  await liff.init({liffId:LIFF_ID});
+  if(typeof liff === "undefined"){
+    alert("ไม่สามารถโหลด LIFF SDK");
+    return;
+  }
+  await liff.init({ liffId: LIFF_ID });
   if(!liff.isLoggedIn()) liff.login();
 })();
 </script>
+
 </body>
 </html>
